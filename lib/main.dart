@@ -1,84 +1,68 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-
+import 'package:get/get.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
-import 'flutter_flow/flutter_flow_util.dart';
-import 'flutter_flow/nav/nav.dart';
-import 'index.dart';
+import 'core/app_routes/app_routes.dart';
+import 'core/utilities/theme_util.dart';
+import 'core/translations/app_translations.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  GoRouter.optionURLReflectsImperativeAPIs = true;
   usePathUrlStrategy();
 
-  await FlutterFlowTheme.initialize();
+  await ThemeUtil.initialize();
 
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
-class MyApp extends StatefulWidget {
-  // This widget is the root of your application.
-  @override
-  State<MyApp> createState() => _MyAppState();
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
-  static _MyAppState of(BuildContext context) =>
-      context.findAncestorStateOfType<_MyAppState>()!;
-}
-
-class _MyAppState extends State<MyApp> {
-  ThemeMode _themeMode = FlutterFlowTheme.themeMode;
-
-  late AppStateNotifier _appStateNotifier;
-  late GoRouter _router;
-  String getRoute([RouteMatch? routeMatch]) {
-    final RouteMatch lastMatch =
-        routeMatch ?? _router.routerDelegate.currentConfiguration.last;
-    final RouteMatchList matchList = lastMatch is ImperativeRouteMatch
-        ? lastMatch.matches
-        : _router.routerDelegate.currentConfiguration;
-    return matchList.uri.toString();
+  // Map GetX locale to MaterialLocalizations locale
+  Locale _getMaterialLocale(Locale? locale) {
+    if (locale == null) return const Locale('en', 'US');
+    
+    // If locale is 'mru', use 'en' for MaterialLocalizations
+    // but GetX translations will still use 'mru_MU'
+    if (locale.languageCode == 'mru') {
+      return const Locale('en', 'US');
+    }
+    
+    return locale;
   }
-
-  List<String> getRouteStack() =>
-      _router.routerDelegate.currentConfiguration.matches
-          .map((e) => getRoute(e))
-          .toList();
-  @override
-  void initState() {
-    super.initState();
-
-    _appStateNotifier = AppStateNotifier.instance;
-    _router = createRouter(_appStateNotifier);
-  }
-
-  void setThemeMode(ThemeMode mode) => safeSetState(() {
-        _themeMode = mode;
-        FlutterFlowTheme.saveThemeMode(mode);
-      });
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
+    return GetMaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Safezi - v1',
-      localizationsDelegates: [
+      theme: ThemeUtil.lightTheme,
+      darkTheme: ThemeUtil.darkTheme,
+      themeMode: ThemeUtil.themeMode,
+      initialRoute: AppRoutes.initial,
+      getPages: AppRoutes.routes,
+      translations: AppTranslations(),
+      locale: const Locale('en', 'US'),
+      fallbackLocale: const Locale('en', 'US'),
+      // Use a builder to map GetX locale to MaterialLocalizations locale
+      builder: (context, child) {
+        final locale = Get.locale;
+        return Localizations.override(
+          context: context,
+          locale: _getMaterialLocale(locale),
+          child: child ?? const SizedBox(),
+        );
+      },
+      localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      supportedLocales: const [Locale('en', '')],
-      theme: ThemeData(
-        brightness: Brightness.light,
-        useMaterial3: false,
-      ),
-      darkTheme: ThemeData(
-        brightness: Brightness.dark,
-        useMaterial3: false,
-      ),
-      themeMode: _themeMode,
-      routerConfig: _router,
+      supportedLocales: const [
+        Locale('en', 'US'),
+        Locale('fr', 'FR'),
+        Locale('mru', 'MU'),
+      ],
     );
   }
 }

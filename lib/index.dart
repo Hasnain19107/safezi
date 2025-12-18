@@ -1,3 +1,4 @@
-// Export pages
-export '/pages/home_page/home_page_widget.dart' show HomePageWidget;
-export '/create_account3/create_account3_widget.dart' show CreateAccount3Widget;
+// Export features
+export 'features/home/view/home_page.dart' show HomePage;
+export 'features/auth/view/start_screen.dart' show StartScreen;
+export 'features/auth/view/sign_In_screen.dart' show SignInScreen;
